@@ -77,3 +77,30 @@ function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
     });
   });
 }
+
+//Agora vamos consultar todos os sensores
+async function coletarDados() {
+  console.log("\n==============================");
+  console.log("INICIANDO COLETA DE DADOS");
+  console.log("==============================");
+
+  try {
+    const leituras: LeituraSensor[] = [];
+
+    for (const sensor of sensores) {
+      const leitura = await consultarSensor(sensor.host, sensor.port);
+
+      leituras.push(leitura);
+
+      console.log(
+        `${sensor.nome}: temperatura=${leitura.temperatura}°C | ` +
+          `umidade=${leitura.umidade}% | ` +
+          `solar=${leitura.incidenciaSolar} W/m²`,
+      );
+    }
+
+    calcularMedias(leituras);
+  } catch (erro) {
+    console.error("Erro ao consultar sensores:", erro);
+  }
+}
