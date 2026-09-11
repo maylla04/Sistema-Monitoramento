@@ -154,3 +154,58 @@ function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
     });
   });
 }
+
+// Cria um servidor HTTP para a interface
+const httpServer = http.createServer((req, res) => {
+  // Rota que fornece os dados do histórico
+  if (req.url === "/api/dados") {
+    // Define que a resposta será um JSON
+    res.writeHead(200, {
+      "Content-Type": "application/json",
+      "Access-Control-Allow-Origin": "*",
+    });
+
+    // Envia o histórico para a interface
+    res.end(JSON.stringify(historico));
+
+    return;
+  }
+
+  // Rota principal que abre a interface
+  if (req.url === "/" || req.url === "/index.html") {
+    // Monta o caminho até o arquivo HTML
+    const arquivo = path.join(process.cwd(), "src", "interface", "index.html");
+
+    // Lê o arquivo HTML
+    fs.readFile(arquivo, (erro, conteudo) => {
+      // Verifica se ocorreu algum erro
+      if (erro) {
+        res.writeHead(500);
+
+        res.end("Erro ao carregar interface");
+
+        return;
+      }
+
+      // Define que a resposta será uma página HTML
+      res.writeHead(200, {
+        "Content-Type": "text/html; charset=utf-8",
+      });
+
+      // Envia o HTML para o navegador
+      res.end(conteudo);
+    });
+
+    return;
+  }
+
+  // Caso a rota não exista, retorna erro 404
+  res.writeHead(404);
+
+  res.end("Página não encontrada");
+});
+
+// Inicia o servidor HTTP na porta 8080
+httpServer.listen(8080, () => {
+  console.log("Interface disponível em http://localhost:8080");
+});
