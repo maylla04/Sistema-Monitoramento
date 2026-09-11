@@ -1,3 +1,4 @@
+//@ts-ignore
 import * as net from "net";
 import * as http from "http";
 import * as fs from "fs";
@@ -52,6 +53,7 @@ function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
     });
 
     // Executado quando chegam dados do sensor
+    //@ts-ignore
     client.on("data", (data: Buffer) => {
       // Converte os dados para texto e armazena
       dadosRecebidos += data.toString("utf8");
