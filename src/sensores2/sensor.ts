@@ -1,4 +1,5 @@
 // Módulo para comunicação via TCP
+//@ts-ignore
 import * as net from "net";
 
 // Modelo que representa uma leitura do sensor
@@ -33,6 +34,7 @@ const server = net.createServer((socket: net.Socket) => {
   console.log(`Gateway conectado ao ${nomeSensor}`);
 
   // Executado quando o sensor recebe uma requisição
+  //@ts-ignore
   socket.on("data", (data: Buffer) => {
     // Converte os dados recebidos para texto
     const requisicao = data.toString("utf8");

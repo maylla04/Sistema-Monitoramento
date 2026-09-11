@@ -9,8 +9,7 @@ class LeituraSensor {
     sensor: string,
     temperatura: number,
     umidade: number,
-    incidenciaSolar: number,
-  ) {
+    incidenciaSolar: number,) {
     this.sensor = sensor;
     this.temperatura = temperatura;
     this.umidade = umidade;
