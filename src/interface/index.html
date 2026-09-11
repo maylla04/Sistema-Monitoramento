@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+
+    <title>Monitoramento Agrícola</title>
+
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 40px;
+        background: #f3f5f3;
+      }
+
+      h1 {
+        margin-bottom: 30px;
+      }
+
+      .cards {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .card {
+        background: white;
+        padding: 25px;
+        border-radius: 12px;
+        min-width: 200px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .valor {
+        font-size: 28px;
+        font-weight: bold;
+      }
+
+      table {
+        margin-top: 30px;
+        border-collapse: collapse;
+        width: 100%;
+        background: white;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+    </style>
+  </head>
+
+  <body>
+    <h1>🌱 Monitoramento Agrícola</h1>
+
+    <div class="cards">
+      <div class="card">
+        <h3>🌡 Temperatura média</h3>
+        <div class="valor" id="temperatura">--</div>
+      </div>
+
+      <div class="card">
+        <h3>💧 Umidade média</h3>
+        <div class="valor" id="umidade">--</div>
+      </div>
+
+      <div class="card">
+        <h3>☀️ Incidência solar</h3>
+        <div class="valor" id="solar">--</div>
+      </div>
+    </div>
+
+    <h2>Histórico</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Temperatura</th>
+          <th>Umidade</th>
+          <th>Incidência Solar</th>
+        </tr>
+      </thead>
+
+      <tbody id="historico"></tbody>
+    </table>
+
+    <script>
+      async function atualizar() {
+        const resposta = await fetch("/api/dados");
+
+        const dados = await resposta.json();
+
+        const ultimo = dados[dados.length - 1];
+
+        if (!ultimo) {
+          return;
+        }
+
+        document.getElementById("temperatura").textContent =
+          ultimo.temperaturaMedia + " °C";
+
+        document.getElementById("umidade").textContent =
+          ultimo.umidadeMedia + " %";
+
+        document.getElementById("solar").textContent =
+          ultimo.incidenciaSolarMedia + " W/m²";
+
+        const tabela = document.getElementById("historico");
+
+        tabela.innerHTML = "";
+
+        dados.forEach((item) => {
+          const linha = document.createElement("tr");
+
+          linha.innerHTML = `
+          <td>${item.data}</td>
+          <td>${item.temperaturaMedia} °C</td>
+          <td>${item.umidadeMedia} %</td>
+          <td>${item.incidenciaSolarMedia} W/m²</td>
+        `;
+
+          tabela.appendChild(linha);
+        });
+      }
+
+      atualizar();
+
+      setInterval(atualizar, 3000);
+    </script>
+  </body>
+</html>
