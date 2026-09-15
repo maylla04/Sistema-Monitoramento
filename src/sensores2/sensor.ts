@@ -1,12 +1,9 @@
 // Módulo para comunicação via TCP
 //@ts-ignore
 import * as net from "net";
+import { LeituraSensor } from "../modelos/leituraSensor.js"; // Modelo que representa uma leitura do sensor
 
-// Modelo que representa uma leitura do sensor
-import { LeituraSensor } from "../modelos/leituraSensor.js";
-
-// Define a porta e o nome do sensor
-const port = Number(process.argv[2]) || 3001;
+const port = Number(process.argv[2]) || 3001; // Define a porta e o nome do sensor
 const nomeSensor = process.argv[3] || "S1";
 
 // Gera um número aleatório entre mínimo e máximo
@@ -16,17 +13,11 @@ function numeroAleatorio(min: number, max: number): number {
 
 // Gera uma nova leitura a cada requisição
 function gerarLeitura(): LeituraSensor {
-  // Temperatura entre 20 e 35 °C
-  const temperatura = Number(numeroAleatorio(20, 35).toFixed(1));
+  const temperatura = Number(numeroAleatorio(20, 35).toFixed(1)); // Temperatura entre 20 e 35 °C
+  const umidade = Math.floor(numeroAleatorio(40, 90)); // Umidade entre 40% e 90%
+  const incidenciaSolar = Math.floor(numeroAleatorio(300, 1000)); // Incidência solar entre 300 e 1000 W/m²
 
-  // Umidade entre 40% e 90%
-  const umidade = Math.floor(numeroAleatorio(40, 90));
-
-  // Incidência solar entre 300 e 1000 W/m²
-  const incidenciaSolar = Math.floor(numeroAleatorio(300, 1000));
-
-  // Retorna os dados do sensor
-  return new LeituraSensor(nomeSensor, temperatura, umidade, incidenciaSolar);
+  return new LeituraSensor(nomeSensor, temperatura, umidade, incidenciaSolar); // Retorna os dados do sensor
 }
 
 // Cria o servidor TCP
@@ -36,24 +27,19 @@ const server = net.createServer((socket: net.Socket) => {
   // Executado quando o sensor recebe uma requisição
   //@ts-ignore
   socket.on("data", (data: Buffer) => {
-    // Converte os dados recebidos para texto
-    const requisicao = data.toString("utf8");
+    const requisicao = data.toString("utf8"); // Converte os dados recebidos para texto
 
     console.log(`${nomeSensor} recebeu: ${requisicao}`);
 
     // Verifica se o Gateway pediu os dados
     if (requisicao === "GET_DATA") {
-      // Gera uma nova leitura
-      const leitura = gerarLeitura();
+      const leitura = gerarLeitura(); // Gera uma nova leitura
 
       console.log("Enviando leitura:");
       console.log(leitura);
 
-      // Envia a leitura para o Gateway em JSON
-      socket.write(JSON.stringify(leitura));
-
-      // Encerra a conexão
-      socket.end();
+      socket.write(JSON.stringify(leitura)); // Envia a leitura para o Gateway em JSON
+      socket.end(); // Encerra a conexão
     }
   });
 
