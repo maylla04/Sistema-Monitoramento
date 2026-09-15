@@ -115,7 +115,7 @@
           const linha = document.createElement("tr");
 
           linha.innerHTML = `
-          <td>${item.data}</td>
+<td>${new Date(item.data).toLocaleString("pt-BR")}</td>
           <td>${item.temperaturaMedia} °C</td>
           <td>${item.umidadeMedia} %</td>
           <td>${item.incidenciaSolarMedia} W/m²</td>
