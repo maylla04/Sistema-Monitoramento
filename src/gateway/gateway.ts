@@ -122,15 +122,15 @@ function calcularMedias(leituras: LeituraSensor[]) {
 
   historico.push({
     data: new Date().toISOString(),
-    temperaturaMedia,
+    temperaturaMedia: Math.round(temperaturaMedia),
     umidadeMedia,
-    incidenciaSolarMedia,
+    incidenciaSolarMedia: Math.round(incidenciaSolarMedia),
   });
 
   console.log("Médias calculadas:");
-  console.log(`Temperatura: ${temperaturaMedia.toFixed(1)}°C`);
+  console.log(`Temperatura: ${Math.round(temperaturaMedia)}°C`);
   console.log(`Umidade: ${umidadeMedia.toFixed(1)}%`);
-  console.log(`Solar: ${incidenciaSolarMedia.toFixed(1)} W/m²`);
+  console.log(`Solar: ${Math.round(incidenciaSolarMedia)} W/m²`);
 }
 
 coletarDados();
