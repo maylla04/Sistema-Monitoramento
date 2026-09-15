@@ -151,6 +151,20 @@ const httpServer = http.createServer((req, res) => {
     return;
   }
 
+  // Rota para pedir uma nova leitura dos sensores sob demanda
+  if (req.url === "/api/coletar" && req.method === "POST") {
+    coletarDados().then(() => {
+      res.writeHead(200, {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+      });
+
+      res.end(JSON.stringify({ ok: true }));
+    });
+
+    return;
+  }
+
   // Rota principal que abre a interface
   if (req.url === "/" || req.url === "/index.html") {
     // Monta o caminho até o arquivo HTML
