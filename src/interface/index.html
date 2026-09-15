@@ -70,7 +70,7 @@
         <div class="valor" id="solar">--</div>
       </div>
     </div>
-
+    <button id="btnColetar">🔄 Pedir nova leitura</button>
     <h2>Histórico</h2>
 
     <table>
@@ -111,23 +111,38 @@
 
   tabela.innerHTML = "";
 
-  // Percorre os dados do mais recente para o mais antigo,
-  // assim cada nova leitura entra no topo da lista
   [...dados].reverse().forEach((item) => {
     const linha = document.createElement("tr");
 
-
-          linha.innerHTML = `
-<td>${new Date(item.data).toLocaleString("pt-BR")}</td>
-          <td>${item.temperaturaMedia} °C</td>
-          <td>${item.umidadeMedia} %</td>
-          <td>${item.incidenciaSolarMedia} W/m²</td>
-        `;
-
+    linha.innerHTML = `
+      <td>${item.data}</td>
+      <td>${item.temperaturaMedia} °C</td>
+      <td>${item.umidadeMedia} %</td>
+      <td>${item.incidenciaSolarMedia} W/m²</td>
+    `;
 
     tabela.appendChild(linha);
   });
 }
+
+// Dispara uma nova coleta no gateway e atualiza a tela em seguida
+async function pedirNovaLeitura() {
+  const botao = document.getElementById("btnColetar");
+
+  botao.disabled = true;
+  botao.textContent = "Coletando...";
+
+  try {
+    await fetch("/api/coletar", { method: "POST" });
+
+    await atualizar();
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "🔄 Pedir nova leitura";
+  }
+}
+
+document.getElementById("btnColetar").addEventListener("click", pedirNovaLeitura);
 
 atualizar();
 
