@@ -88,65 +88,73 @@
 
     <script>
       async function atualizar() {
-  const resposta = await fetch("/api/dados");
+        const resposta = await fetch("/api/dados");
 
-  const dados = await resposta.json();
+        const dados = await resposta.json();
 
-  const ultimo = dados[dados.length - 1];
+        const ultimo = dados[dados.length - 1];
 
-  if (!ultimo) {
-    return;
-  }
+        if (!ultimo) {
+          return;
+        }
 
-  document.getElementById("temperatura").textContent =
-    ultimo.temperaturaMedia + " °C";
+        document.getElementById("temperatura").textContent =
+          ultimo.temperaturaMedia + " °C";
 
-  document.getElementById("umidade").textContent =
-    ultimo.umidadeMedia + " %";
+        document.getElementById("umidade").textContent =
+          ultimo.umidadeMedia + " %";
 
-  document.getElementById("solar").textContent =
-    ultimo.incidenciaSolarMedia + " W/m²";
+        document.getElementById("solar").textContent =
+          ultimo.incidenciaSolarMedia + " W/m²";
 
-  const tabela = document.getElementById("historico");
+        const tabela = document.getElementById("historico");
 
-  tabela.innerHTML = "";
+        tabela.innerHTML = "";
 
-  [...dados].reverse().forEach((item) => {
-    const linha = document.createElement("tr");
+        [...dados].reverse().forEach((item) => {
+          const linha = document.createElement("tr");
 
-    linha.innerHTML = `
-      <td>${item.data}</td>
+          linha.innerHTML = `
+     <td>${new Date(item.data).toLocaleString("pt-BR", {
+       day: "2-digit",
+       month: "2-digit",
+       year: "numeric",
+       hour: "2-digit",
+       minute: "2-digit",
+     })}hs</td>
       <td>${item.temperaturaMedia} °C</td>
       <td>${item.umidadeMedia} %</td>
       <td>${item.incidenciaSolarMedia} W/m²</td>
     `;
 
-    tabela.appendChild(linha);
-  });
-}
+          tabela.appendChild(linha);
+        });
+      }
 
-// Dispara uma nova coleta no gateway e atualiza a tela em seguida
-async function pedirNovaLeitura() {
-  const botao = document.getElementById("btnColetar");
+      // Dispara uma nova coleta no gateway e atualiza a tela em seguida
+      async function pedirNovaLeitura() {
+        const botao = document.getElementById("btnColetar");
 
-  botao.disabled = true;
-  botao.textContent = "Coletando...";
+        botao.disabled = true;
+        botao.textContent = "Coletando...";
 
-  try {
-    await fetch("/api/coletar", { method: "POST" });
+        try {
+          await fetch("/api/coletar", { method: "POST" });
 
-    await atualizar();
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "🔄 Pedir nova leitura";
-  }
-}
+          await atualizar();
+        } finally {
+          botao.disabled = false;
+          botao.textContent = "🔄 Pedir nova leitura";
+        }
+      }
 
-document.getElementById("btnColetar").addEventListener("click", pedirNovaLeitura);
+      document
+        .getElementById("btnColetar")
+        .addEventListener("click", pedirNovaLeitura);
 
-atualizar();
+      atualizar();
 
-setInterval(atualizar, 3000);
+      setInterval(atualizar, 3000);
     </script>
   </body>
 </html>
