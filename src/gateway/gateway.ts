@@ -4,6 +4,7 @@ import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
 import { LeituraSensor } from "../modelos/leituraSensor.js";
+import { calcularMedias } from "./calcularMedia.js";
 
 //Aqui estamos dizendo: O Gateway conhece três conjuntos de sensores.
 const sensores = [
@@ -101,38 +102,18 @@ async function coletarDados() {
       );
     }
 
-    calcularMedias(leituras);
+    const medias = calcularMedias(leituras);
+
+    historico.push({
+      data: new Date().toISOString(),
+      temperaturaMedia: medias.temperaturaMedia,
+      umidadeMedia: medias.umidadeMedia,
+      incidenciaSolarMedia: medias.incidenciaSolarMedia,
+    });
   } catch (erro) {
     console.error("Erro ao consultar sensores:", erro);
   }
 }
-
-function calcularMedias(leituras: LeituraSensor[]) {
-  const temperaturaMedia =
-    leituras.reduce((soma, leitura) => soma + leitura.temperatura, 0) /
-    leituras.length;
-
-  const umidadeMedia =
-    leituras.reduce((soma, leitura) => soma + leitura.umidade, 0) /
-    leituras.length;
-
-  const incidenciaSolarMedia =
-    leituras.reduce((soma, leitura) => soma + leitura.incidenciaSolar, 0) /
-    leituras.length;
-
-  historico.push({
-    data: new Date().toISOString(),
-    temperaturaMedia: Math.round(temperaturaMedia),
-    umidadeMedia: Math.round(umidadeMedia),
-    incidenciaSolarMedia: Math.round(incidenciaSolarMedia),
-  });
-
-  console.log("Médias calculadas:");
-  console.log(`Temperatura: ${Math.round(temperaturaMedia)}°C`);
-  console.log(`Umidade: ${Math.round(umidadeMedia)}%`);
-  console.log(`Solar: ${Math.round(incidenciaSolarMedia)} W/m²`);
-}
-
 coletarDados();
 
 // Cria um servidor HTTP para a interface
