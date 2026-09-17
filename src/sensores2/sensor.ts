@@ -50,6 +50,8 @@ const server = net.createServer((socket: net.Socket) => {
 });
 
 // Inicia o servidor na porta definida
-server.listen(port, () => {
+// "0.0.0.0" garante que o sensor aceite conexões vindas de outras máquinas
+// da rede (o Gateway pode estar em outro computador), não só do próprio localhost
+server.listen(port, "0.0.0.0", () => {
   console.log(`${nomeSensor} funcionando na porta ${port}`);
 });
