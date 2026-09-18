@@ -7,20 +7,23 @@ import { LeituraSensor } from "../modelos/leituraSensor.js";
 import { calcularMedias } from "./calcularMedia.js";
 
 //Aqui estamos dizendo: O Gateway conhece três conjuntos de sensores.
+// O host de cada sensor pode ser definido por variável de ambiente,
+// assim cada sensor pode rodar em uma máquina diferente na rede
+// (basta exportar SENSOR1_HOST, SENSOR2_HOST, SENSOR3_HOST antes de iniciar o gateway).
 const sensores = [
   {
     nome: "S1",
-    host: "localhost",
+    host: process.env.SENSOR1_HOST || "localhost",
     port: 3001,
   },
   {
     nome: "S2",
-    host: "localhost",
+    host: process.env.SENSOR2_HOST || "localhost",
     port: 3002,
   },
   {
     nome: "S3",
-    host: "localhost",
+    host: process.env.SENSOR3_HOST || "localhost",
     port: 3003,
   },
 ];
@@ -181,6 +184,8 @@ const httpServer = http.createServer((req, res) => {
 });
 
 // Inicia o servidor HTTP na porta 8080
-httpServer.listen(8080, () => {
+// "0.0.0.0" garante que a interface fique acessível de outras máquinas da rede,
+// não só do próprio localhost
+httpServer.listen(8080, "0.0.0.0", () => {
   console.log("Interface disponível em http://localhost:8080");
 });
