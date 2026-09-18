@@ -4,9 +4,8 @@ import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
 import { LeituraSensor } from "../modelos/leituraSensor.js";
-import { calcularMedias } from "./calcularMedia.js";
 
-//Aqui estamos dizendo: O Gateway conhece três conjuntos de sensores.
+// Aqui estamos dizendo: O Gateway conhece três conjuntos de sensores.
 // O host de cada sensor pode ser definido por variável de ambiente,
 // assim cada sensor pode rodar em uma máquina diferente na rede
 // (basta exportar SENSOR1_HOST, SENSOR2_HOST, SENSOR3_HOST antes de iniciar o gateway).
@@ -27,6 +26,13 @@ const sensores = [
     port: 3003,
   },
 ];
+
+// O serviço de cálculo de média agora roda em outra máquina.
+// Configure MEDIA_HOST e MEDIA_PORT antes de iniciar o gateway.
+const mediaService = {
+  host: process.env.MEDIA_HOST || "localhost",
+  port: Number(process.env.MEDIA_PORT) || 4000,
+};
 
 const historico: {
   data: string;
@@ -84,7 +90,59 @@ function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
   });
 }
 
-//Agora vamos consultar todos os sensores
+// Consulta o serviço remoto de média, enviando as leituras coletadas
+// e recebendo o resultado já calculado
+function consultarMedia(leituras: LeituraSensor[]): Promise<{
+  temperaturaMedia: number;
+  umidadeMedia: number;
+  incidenciaSolarMedia: number;
+}> {
+  return new Promise((resolve, reject) => {
+    // Cria a conexão TCP com o serviço de média
+    const client: net.Socket = net.createConnection({
+      host: mediaService.host,
+      port: mediaService.port,
+    });
+
+    // Guarda os dados recebidos do serviço de média
+    let dadosRecebidos = "";
+
+    // Executado quando a conexão é estabelecida
+    client.on("connect", () => {
+      console.log(
+        `Conectado ao serviço de média em ${mediaService.host}:${mediaService.port}`,
+      );
+
+      // Envia as leituras como JSON e já encerra o lado de escrita,
+      // sinalizando ao servidor que terminou de enviar
+      client.end(JSON.stringify(leituras));
+    });
+
+    // Executado quando chegam dados do serviço de média
+    //@ts-ignore
+    client.on("data", (data: Buffer) => {
+      dadosRecebidos += data.toString("utf8");
+    });
+
+    // Executado quando o serviço de média termina o envio
+    client.on("end", () => {
+      try {
+        const medias = JSON.parse(dadosRecebidos);
+
+        resolve(medias);
+      } catch (erro) {
+        reject(erro);
+      }
+    });
+
+    // Captura erros na conexão
+    client.on("error", (erro) => {
+      reject(erro);
+    });
+  });
+}
+
+// Agora vamos consultar todos os sensores
 async function coletarDados() {
   console.log("\n==============================");
   console.log("INICIANDO COLETA DE DADOS");
@@ -105,7 +163,8 @@ async function coletarDados() {
       );
     }
 
-    const medias = calcularMedias(leituras);
+    // Em vez de calcular localmente, consulta o serviço remoto de média
+    const medias = await consultarMedia(leituras);
 
     historico.push({
       data: new Date().toISOString(),
@@ -114,7 +173,7 @@ async function coletarDados() {
       incidenciaSolarMedia: medias.incidenciaSolarMedia,
     });
   } catch (erro) {
-    console.error("Erro ao consultar sensores:", erro);
+    console.error("Erro ao consultar sensores ou serviço de média:", erro);
   }
 }
 coletarDados();
