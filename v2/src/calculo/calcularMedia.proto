@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package calculo;
+
+service CalculoService {
+  rpc CalcularMedias (LeiturasRequest) returns (MediasResponse);
+}
+
+message LeituraSensor {
+  double temperatura = 1;
+  double umidade = 2;
+  double incidenciaSolar = 3;
+}
+
+message LeiturasRequest {
+  repeated LeituraSensor leituras = 1;
+}
+
+message MediasResponse {
+  double temperaturaMedia = 1;
+  double umidadeMedia = 2;
+  double incidenciaSolarMedia = 3;
+}
