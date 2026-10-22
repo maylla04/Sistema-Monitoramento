@@ -31,7 +31,7 @@ Sistema de monitoramento agrícola distribuído, composto por sensores simulados
 
 npx tsx src/calculo/servidor.ts
 
-### 2. Subir o gateway
+### 2. Subir o primeiro gateway
 
 Em outro terminal:
 
@@ -41,7 +41,7 @@ npx tsx src/gateway/gateway.ts
 
 O gateway se conecta aos três sensores, coleta as leituras e calcula as médias periodicamente.
 
-### 3. Subir os sensores
+### 3. Subir os sensores do primeiro gateway/Edge
 
 Cada sensor deve ser iniciado em um terminal separado, informando a porta e o nome:
 
@@ -51,24 +51,36 @@ npx tsx src/sensores2/sensor.ts 3002 S2
 npx tsx src/sensores2/sensor.ts 3003 S3
 ```
 
-### 4. Acessar a interface web
+### 4. Subir o segundo gateway
 
-Com o gateway em execução, acesse:
+Em outro terminal:
 
 ```
-http://localhost:8080
+npx tsx src/gateway2/gateway2.ts
 ```
 
+### 5. Subir os sensores do segundo gateway/Edge
+
+Cada sensor deve ser iniciado em um terminal separado, informando a porta e o nome:
+
+```
+npx tsx src/sensores2/sensor.ts 3004 S4
+npx tsx src/sensores2/sensor.ts 3005 S5
+npx tsx src/sensores2/sensor.ts 3006 S6
 ## Estrutura do projeto
 
 ```
+
 src/
 ├── gateway/
-│   └── gateway.ts        # Coleta dados dos sensores e serve a interface web
+│ └── gateway.ts # Coleta dados dos sensores e serve a interface web
 ├── sensores2/
-│   └── sensor.ts         # Simula um sensor TCP individual
+│ └── sensor.ts # Simula um sensor TCP individual
 ├── modelos/
-│   └── leituraSensor.ts  # Classe LeituraSensor
+│ └── leituraSensor.ts # Classe LeituraSensor
 └── interface/
-    └── index.html        # Interface web de monitoramento
+└── index.html # Interface web de monitoramento
+
+```
+
 ```
