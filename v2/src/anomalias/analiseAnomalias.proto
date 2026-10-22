@@ -1,0 +1,31 @@
+syntax = "proto3";
+
+package anomalias;
+
+service AnomaliaService {
+  rpc AnalisarAnomalias (MedicoesRequest) returns (AnomaliasResponse);
+}
+//Medicao é a média de um Edge: 
+//o nome dele (edge) mais as três médias. 
+//O FOG manda uma Medicao por Edge.
+message Medicao {
+  string edge = 1;
+  double temperaturaMedia = 2;
+  double umidadeMedia = 3;
+  double incidenciaSolarMedia = 4;
+}
+
+message MedicoesRequest {
+  repeated Medicao medicoes = 1;
+}
+
+message Anomalia {
+  string edge = 1;
+  string tipo = 2;
+  string mensagem = 3;
+  string acao = 4;
+}
+
+message AnomaliasResponse {
+  repeated Anomalia anomalias = 1;
+}
