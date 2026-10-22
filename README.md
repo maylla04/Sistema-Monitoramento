@@ -27,15 +27,9 @@ Sistema de monitoramento agrícola distribuído, composto por sensores simulados
 
 ## Como executar
 
-### 1. Subir os sensores
+### 1. Subir o servidor
 
-Cada sensor deve ser iniciado em um terminal separado, informando a porta e o nome:
-
-```
-npx tsx src/sensores2/sensor.ts 3001 S1
-npx tsx src/sensores2/sensor.ts 3002 S2
-npx tsx src/sensores2/sensor.ts 3003 S3
-```
+npx tsx src/calculo/servidor.ts
 
 ### 2. Subir o gateway
 
@@ -47,7 +41,17 @@ npx tsx src/gateway/gateway.ts
 
 O gateway se conecta aos três sensores, coleta as leituras e calcula as médias periodicamente.
 
-### 3. Acessar a interface web
+### 3. Subir os sensores
+
+Cada sensor deve ser iniciado em um terminal separado, informando a porta e o nome:
+
+```
+npx tsx src/sensores2/sensor.ts 3001 S1
+npx tsx src/sensores2/sensor.ts 3002 S2
+npx tsx src/sensores2/sensor.ts 3003 S3
+```
+
+### 4. Acessar a interface web
 
 Com o gateway em execução, acesse:
 
