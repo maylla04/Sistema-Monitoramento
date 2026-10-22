@@ -4,6 +4,8 @@ import * as http from "http";
 import * as fs from "fs";
 import * as path from "path";
 import { LeituraSensor } from "../modelos/leituraSensor.js";
+import * as grpc from "@grpc/grpc-js";
+import * as protoLoader from "@grpc/proto-loader";
 
 // Aqui estamos dizendo: O Gateway conhece três conjuntos de sensores.
 // O host de cada sensor pode ser definido por variável de ambiente,
@@ -27,12 +29,31 @@ const sensores = [
   },
 ];
 
-// O serviço de cálculo de média agora roda em outra máquina.
-// Configure MEDIA_HOST e MEDIA_PORT antes de iniciar o gateway.
-const mediaService = {
-  host: process.env.MEDIA_HOST || "localhost",
-  port: Number(process.env.MEDIA_PORT) || 4000,
-};
+//Preparando um cliente gRPC que se comunica com o servidor RPC na porta 50051.
+const mediaHost = process.env.MEDIA_HOST || "localhost";
+const mediaPort = Number(process.env.MEDIA_PORT) || 50051;
+
+const caminhoProto = path.join(
+  process.cwd(),
+  "src",
+  "calculo",
+  "calcularMedia.proto",
+);
+
+const definicao = protoLoader.loadSync(caminhoProto, {
+  keepCase: true,
+  longs: String,
+  enums: String,
+  defaults: true,
+  oneofs: true,
+});
+
+const pacote = grpc.loadPackageDefinition(definicao) as any;
+
+const clienteRPC = new pacote.calculo.CalculoService(
+  `${mediaHost}:${mediaPort}`,
+  grpc.credentials.createInsecure(),
+);
 
 const historico: {
   data: string;
@@ -98,47 +119,18 @@ function consultarMedia(leituras: LeituraSensor[]): Promise<{
   incidenciaSolarMedia: number;
 }> {
   return new Promise((resolve, reject) => {
-    // Cria a conexão TCP com o serviço de média
-    const client: net.Socket = net.createConnection({
-      host: mediaService.host,
-      port: mediaService.port,
-    });
+    clienteRPC.calcularMedias(
+      { leituras },
+      (erro: grpc.ServiceError | null, medias: any) => {
+        if (erro) {
+          reject(erro);
+          return;
+        }
 
-    // Guarda os dados recebidos do serviço de média
-    let dadosRecebidos = "";
-
-    // Executado quando a conexão é estabelecida
-    client.on("connect", () => {
-      console.log(
-        `Conectado ao serviço de média em ${mediaService.host}:${mediaService.port}`,
-      );
-
-      // Envia as leituras como JSON e já encerra o lado de escrita,
-      // sinalizando ao servidor que terminou de enviar
-      client.end(JSON.stringify(leituras));
-    });
-
-    // Executado quando chegam dados do serviço de média
-    //@ts-ignore
-    client.on("data", (data: Buffer) => {
-      dadosRecebidos += data.toString("utf8");
-    });
-
-    // Executado quando o serviço de média termina o envio
-    client.on("end", () => {
-      try {
-        const medias = JSON.parse(dadosRecebidos);
-
+        console.log("Médias recebidas pelo RPC:", medias);
         resolve(medias);
-      } catch (erro) {
-        reject(erro);
-      }
-    });
-
-    // Captura erros na conexão
-    client.on("error", (erro) => {
-      reject(erro);
-    });
+      },
+    );
   });
 }
 
