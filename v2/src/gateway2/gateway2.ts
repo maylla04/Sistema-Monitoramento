@@ -50,6 +50,13 @@ const clienteRPC = new pacote.calculo.CalculoService(
   grpc.credentials.createInsecure(),
 );
 
+const historico: {
+  data: string;
+  umidadeMedia: number;
+  temperaturaMedia: number;
+  incidenciaSolarMedia: number;
+}[] = [];
+
 // Consulta um sensor por TCP
 function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
   return new Promise((resolve, reject) => {
@@ -101,6 +108,7 @@ function consultarMedia(leituras: LeituraSensor[]): Promise<{
 }
 
 // Coleta os dados do segundo Edge
+
 async function coletarDados() {
   console.log("\n==============================");
   console.log("INICIANDO SEGUNDO GATEWAY");
@@ -125,14 +133,22 @@ async function coletarDados() {
 
     console.log("Médias do segundo Edge recebidas pelo RPC:");
     console.log(medias);
+
+    historico.push({
+      data: new Date().toISOString(),
+      temperaturaMedia: medias.temperaturaMedia,
+      umidadeMedia: medias.umidadeMedia,
+      incidenciaSolarMedia: medias.incidenciaSolarMedia,
+    });
   } catch (erro) {
     console.error(
       "Erro no segundo Gateway ao consultar sensores ou RPC:",
       erro,
     );
-  } finally {
-    clienteRPC.close();
   }
 }
 
 coletarDados();
+setInterval(() => {
+  coletarDados();
+}, 5000);
