@@ -62,6 +62,33 @@ const historico: {
   incidenciaSolarMedia: number;
 }[] = [];
 
+// Servidor socket do Edge: o FOG se conecta aqui para pegar a última média
+const edgeNome = "EDGE1";
+const edgePort = 4001;
+
+const edgeServer = net.createServer((socket: net.Socket) => {
+  socket.on("data", (data: Buffer) => {
+    if (data.toString("utf8").trim() !== "GET_DATA") {
+      return;
+    }
+
+    const ultimo = historico[historico.length - 1];
+
+    const resposta = ultimo
+      ? { edge: edgeNome, ...ultimo }
+      : { edge: edgeNome, semDados: true };
+
+    socket.write(JSON.stringify(resposta));
+    socket.end();
+  });
+
+  socket.on("error", () => {});
+});
+
+edgeServer.listen(edgePort, "0.0.0.0", () => {
+  console.log(`${edgeNome} aguardando o FOG na porta ${edgePort}`);
+});
+
 // Consulta um sensor e retorna sua leitura
 function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
   // Cria uma Promise para esperar a resposta do sensor

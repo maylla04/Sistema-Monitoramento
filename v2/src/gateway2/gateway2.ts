@@ -57,6 +57,32 @@ const historico: {
   incidenciaSolarMedia: number;
 }[] = [];
 
+const edgeNome = "EDGE2";
+const edgePort = 4002;
+
+const edgeServer = net.createServer((socket: net.Socket) => {
+  socket.on("data", (data: Buffer) => {
+    if (data.toString("utf8").trim() !== "GET_DATA") {
+      return;
+    }
+
+    const ultimo = historico[historico.length - 1];
+
+    const resposta = ultimo
+      ? { edge: edgeNome, ...ultimo }
+      : { edge: edgeNome, semDados: true };
+
+    socket.write(JSON.stringify(resposta));
+    socket.end();
+  });
+
+  socket.on("error", () => {});
+});
+
+edgeServer.listen(edgePort, "0.0.0.0", () => {
+  console.log(`${edgeNome} aguardando o FOG na porta ${edgePort}`);
+});
+
 // Consulta um sensor por TCP
 function consultarSensor(host: string, port: number): Promise<LeituraSensor> {
   return new Promise((resolve, reject) => {
